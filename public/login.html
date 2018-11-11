@@ -6,21 +6,49 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Reg Z-chat</title>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <script>
+        $( document ).ready(function() {
+            $("#btn").click(
+                function(){
+                    sendAjaxForm('ajax_form', '/auth/login');
+                    return false;
+                }
+            );
+        });
+
+        function sendAjaxForm(ajax_form, url) {
+            $.ajax({
+                url:     url, //url страницы (action_ajax_form.php)
+                type:     "POST", //метод отправки
+                dataType: "html", //формат данных
+                data: $("#"+ajax_form).serialize(),  // Сеарилизуем объект
+                success: function(response) { //Данные отправлены успешно
+                    result = $.parseJSON(response);
+                    localStorage.setItem('token', result.token);
+                    console.log(result);
+                },
+                error: function(response) { // Данные не отправлены
+                    console.log('Ошибка. Данные не отправлены.');
+                }
+            });
+        }
+    </script>
 </head>
 <body>
 
-<form action="/auth/login" method="post">
-    First name:<br>
+<form id="ajax_form" action="" method="post">
+    Login:<br>
     <label>
-        <input type="text" name="firstname" value="Mickey">
+        <input type="text" name="login" value="admin">
     </label>
     <br>
-    Last name:<br>
+    Password:<br>
     <label>
-        <input type="text" name="lastname" value="Mouse">
+        <input type="text" name="password" value="123qwe">
     </label>
     <br><br>
-    <input type="submit" value="Submit">
+    <input id="btn" type="submit" value="Submit">
 </form>
 
 </body>
