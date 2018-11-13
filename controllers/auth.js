@@ -39,7 +39,11 @@ module.exports.login = async (req, res) => {
             }, keys.jwt, {expiresIn: 60 * 60 * 2});
 
             res.json({
-                token: `Bearer ${token}`
+                token: `Bearer ${token}`,
+                user: {
+                    login: candidate.login,
+                    userId: candidate._id
+                }
             })
         } else {
             res.send('Неверный пароль!')

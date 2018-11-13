@@ -11,10 +11,16 @@
 <body>
 
 <span>Dialogs:</span>
-<ul class="chats"></ul>
+<ul id="chats">
+
+</ul>
+<input type="button" onclick="" value="getDialogs">
 
 <script>
-    function createRequest(url, data){
+    function createRequest(url, user, successed){
+        var data = {
+            userId: user.userId
+        };
         $.ajax({
             type: "POST",
             url: url,
@@ -24,19 +30,24 @@
             },
             data: JSON.stringify(data),
             dataType: "json",
-            success: function(data){
-                console.log(data);
-                return data;
-            },
+            success: successed,
             failure: function(errMsg) {
                 console.log(errMsg);
             }
         });
     }
     (() => {
-        var data = createRequest('/chat/getDialogs', {userId: '5be75656e349311b44b5fae9'});
-        console.log(data);
-        // $('.chats').append()
+        var user = JSON.parse(localStorage.getItem('user'));
+        createRequest('/chat/getDialogs', user, (data)=> {
+            console.log(data);
+            for (var i in data) {
+                if (data[i].firstId === user.userId) {
+                    $('#chats').append(`<li>sender: ${data[i].secondId}</li>`)
+                } else if(data[i].secondId === user.userId){
+
+                }
+            }
+        });
     })();
 </script>
 </body>

@@ -26,7 +26,8 @@
                 success: function(response) { //Данные отправлены успешно
                     result = $.parseJSON(response);
                     localStorage.setItem('token', result.token);
-                    console.log(result);
+                    localStorage.setItem('user', JSON.stringify(result.user));
+
                 },
                 error: function(response) { // Данные не отправлены
                     console.log('Ошибка. Данные не отправлены.');
