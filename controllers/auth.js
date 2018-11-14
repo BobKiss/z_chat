@@ -21,7 +21,7 @@ module.exports.register = async (req, res) => {
         });
         try {
             await user.save();
-            res.json(user);
+            res.redirect('/auth/login');
 
         } catch (e) {
             console.log(`controllers/register error: ${e}`);
@@ -44,9 +44,9 @@ module.exports.login = async (req, res) => {
                     login: candidate.login,
                     userId: candidate._id
                 }
-            })
+            });
         } else {
-            res.send('Неверный пароль!')
+            res.status(400).json({ message: 'Неверный пароль!' });
         }
     } else {
         res.send('Зарегистируйтесь, такого пользователя не существует :)')

@@ -7,19 +7,23 @@ module.exports.renderMain = (req, res) => {
     res.sendFile(path.join(__dirname, '../public', 'chat.html'));
 };
 module.exports.createDialog = async (req, res) => {
-    const firstMember = await User.findOne({_id: req.body.firstId});
+    const firstMember = await User.findOne({_id: req.user._id});
     const secondMember = await User.findOne({_id: req.body.secondId});
-    console.log(req.body);
     if (firstMember && secondMember) {
-        const candidate1 =  await Dialog.findOne({firstId: req.body.firstId});
-        const candidate2 = await Dialog.findOne({secondId: req.body.secondId});
-        if (candidate1 && candidate2) {
+        const unicCheck = await Dialog.findOne({
+            $or: [
+                { firstId:  req.user._id, secondId: req.body.secondId },
+                { secondId: req.user._id, firstId:  req.body.secondId  }
+                ]
+        });
+
+        if (unicCheck) {
             res.status(400).json({
                 message: 'Такой чат уже существует'
             })
         } else {
             const dialog = new Dialog({
-                firstId: req.body.firstId,
+                firstId: req.user._id,
                 secondId: req.body.secondId
             });
             try {
@@ -36,39 +40,68 @@ module.exports.createDialog = async (req, res) => {
         })
     }
 };
-module.exports.getDialogs = async (req, res) => {
-    const dialogs1 =  await Dialog.find({firstId: req.body.userId});
-    const dialogs2 =  await Dialog.find({secondId: req.body.userId});
-    const dialogs = dialogs1.concat(dialogs2);
-    res.json(dialogs)
+module.exports.getUserDialogs = async (req, res) => {
+    const dialogsId1 =  await Dialog.find({firstId: req.user._id});
+    const dialogsId2 =  await Dialog.find({secondId: req.user._id});
+    const dialogsId = dialogsId1.concat(dialogsId2);
+    // console.log(dialogsId);
+    // userName, lastMessage
+
+    let dialogsInfo = [];
+    const response = await Promise.all(dialogsId.map( async function(dialog, i, arr) {
+        // console.log(dialog)
+        const userId = (dialog.firstId === req.user._id ? dialog.secondId : dialog.firstId);
+        const userName = await User.findOne({_id: userId}, {login: 1, _id: 0});
+        let lastMessage =  await Message.findOne({chatId: dialog._id}, {_id: false }).sort({_id:-1});
+        if (lastMessage === null) {
+            lastMessage = {
+                chatId: dialog._id
+            };
+        }
+        return {
+            userId: userId,
+            userName: userName['login'],
+            lastMessage: lastMessage
+        };
+    }));
+    res.json(response);
 };
 module.exports.createChat = async (req, res) => {
-
+    console.log(req.user)
 };
 module.exports.sendMessage = async (req, res) => {
-    if (req.body.dialog) {
-        const chat =  await Dialog.findOne({firstId: req.body.firstId, secondId: req.body.secondId});
-        if (chat) {
-            const message = new Message({
-                chatId: chat._id,
-                fromId: req.body.firstId,
-                content: req.body.content,
-                flag: false
-            });
-            try {
-                await message.save();
-                res.json(message);
-
-            } catch (e) {
-                console.log(`controllers/chat error: ${e}`);
-            }
-        } else {
-            res.status(404).json({
-                message: 'Такого чата не существует!'
-            })
+    const chat =  await Dialog.findOne({ _id : req.body.chatId });
+    if (chat) {
+        const message = new Message({
+            chatId: chat._id,
+            fromId: req.user._id,
+            content: req.body.content,
+            flag: false
+        });
+        try {
+            await message.save();
+            res.json(message);
+        } catch (e) {
+            console.log(`controllers/chat error: ${e}`);
         }
     } else {
-        // const chat =  await Dialog.findOne({_id: req.body.chatId});
-        // если это чат, то тут отправляем, но привязываем к ЧатИд
+        res.status(404).json({
+            message: 'Такого чата не существует!'
+        })
     }
+};
+
+module.exports.getDialog = async (req, res) => {
+    const dialog =  await Dialog.findOne({ _id : req.body.chatId });
+    const user1 = await User.findOne({_id: dialog.firstId}, {login: 1, _id: 1});
+    const user2 = await User.findOne({_id: dialog.secondId}, {login: 1, _id: 1});
+    const messages = await Message.find({ chatId: req.body.chatId }).find().sort({'createdAt': -1}).limit(5);
+    let response = {
+        dialogInfo: dialog,
+        user: user1._id === req.user._id ? user1 : user2,
+        companion: user1._id === req.user._id ? user2 : user1,
+        messages: messages
+    };
+    console.log();
+    res.json(response);
 };

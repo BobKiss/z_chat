@@ -7,20 +7,70 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Chat</title>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+    <style>
+        #curent_window {
+            width: 500px;
+            height: 500px;
+            border: 1px solid black;
+        }
+        #curent_window #info {
+            width: 100%;
+            height: 20px;
+        }
+        #curent_window #messages {
+            width: 100%;
+            height: 400px;
+        }
+        #curent_window form input:first-child {
+            width: 80%;
+        }
+        #curent_window form input:last-child {
+            width: 20%;
+        }
+        #dialogs li:hover {
+            background-color: gray;
+            color: azure;
+        }
+
+    </style>
 </head>
 <body>
 
 <span>Dialogs:</span>
-<ul id="chats">
+<ul id="dialogs">
 
 </ul>
-<input type="button" onclick="" value="getDialogs">
+<br>
+<span>Send message:</span>
+<form action="" id="sendMessage_form">
+    <input name="content" type="text">
+    <br>
+    <span>To:</span> <br>
+    <input name="chatId" type="text" value="5be9bf4fa708640e9066f820"> <br>
+    <input type="button" value="Send" onclick="sendMessage()">
+</form>
+<br>
+<br>
+<span>Create dialog: </span>
+<form id="createDialog_form" action="">
+    <span>With (id):</span>
+    <input type="text" name="secondId">
+    <input type="button" value="Create dialog" onclick="createDialog()">
+</form>
+<br>
+<br>
+<div id="curent_window">
+    <div id="info"></div>
+    <ul id="messages"></ul>
+    <form action="" class="input">
+        <input type="text">
+        <input type="button" value="Отправить сообщение">
+    </form>
+</div>
 
 <script>
-    function createRequest(url, user, successed){
-        var data = {
-            userId: user.userId
-        };
+    function createRequest(url, reqData, successed){
         $.ajax({
             type: "POST",
             url: url,
@@ -28,27 +78,61 @@
                 'Authorization': localStorage.token,
                 'Content-Type':'application/json'
             },
-            data: JSON.stringify(data),
+            data: JSON.stringify(reqData),
             dataType: "json",
             success: successed,
-            failure: function(errMsg) {
-                console.log(errMsg);
-            }
-        });
-    }
-    (() => {
-        var user = JSON.parse(localStorage.getItem('user'));
-        createRequest('/chat/getDialogs', user, (data)=> {
-            console.log(data);
-            for (var i in data) {
-                if (data[i].firstId === user.userId) {
-                    $('#chats').append(`<li>sender: ${data[i].secondId}</li>`)
-                } else if(data[i].secondId === user.userId){
-
+            error: function(errMsg) {
+                if(errMsg.statusText === 'Unauthorized') {
+                    window.location.href = `${window.location.origin}/auth/login/`;
                 }
             }
         });
+    }
+    ( () => {
+        var user = JSON.parse(localStorage.getItem('user'));
+        createRequest('/chat/getUserDialogs', user, (data)=> {
+            reqAnsw = JSON.parse(JSON.stringify(data));
+            for (var key in data) {
+                $('#dialogs').append(`<li onclick="getDialog('${data[key].lastMessage.chatId}')">From: ${data[key].userName}. Last Message: ${ data[key].lastMessage.content != undefined ? data[key].lastMessage.content : '(не найдено)' }</li>`);
+            }
+        });
     })();
+
+    function sendMessage(){
+        var form = $('#sendMessage_form').serializeArray();
+        var reqData = {
+            content : form[0].value,
+            chatId : form[1].value
+        };
+        console.log(reqData);
+        createRequest('/chat/sendMessage', reqData, (data)=> {
+            console.log(data);
+        });
+    }
+    function createDialog() {
+        var form = $('#createDialog_form').serializeArray();
+        var reqData = {
+            secondId: form[0].value
+        };
+        createRequest('/chat/createDialog', reqData, (data) => {
+            console.log(data);
+        });
+    }
+
+    function getDialog(chatId) {
+
+        $('#info').empty();
+        $('#messages').empty();
+        createRequest('/chat/getDialog', {chatId: chatId}, (data) => {
+            console.log(data);
+            $('#info').append(`<span>Собеседник: ${data.companion.login}. </span>`);
+            console.log(data.messages.length);
+            for (var i = data.messages.length - 1; i >= 0; i--) {
+                $('#messages').append(`<span> Отправитель: ${data.companion.login} <br> Сообщение: ${data.messages[i].content}</span> <br> <br>`)
+            }
+        })
+    }
+
 </script>
 </body>
 </html>

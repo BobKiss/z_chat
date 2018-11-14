@@ -5,7 +5,7 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Reg Z-chat</title>
+    <title>Z-chat || LOGIN</title>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
     <script>
         $( document ).ready(function() {
@@ -27,17 +27,19 @@
                     result = $.parseJSON(response);
                     localStorage.setItem('token', result.token);
                     localStorage.setItem('user', JSON.stringify(result.user));
-
+                    window.location.href = `${window.location.origin}/chat/`;
                 },
-                error: function(response) { // Данные не отправлены
-                    console.log('Ошибка. Данные не отправлены.');
+                error: function(errMsg) { // Данные не отправлены
+                    // JSON.parse(errMsg.responseText).message
+                    $('body').append(`<div style="position: fixed; bottom: 0px; right: 20px; display: none; height: 50px; width: 300px; background-color: red; color: white" id="alert"><span>${JSON.parse(errMsg.responseText).message}</span></div>`)
+                    $('#alert').slideDown('slow');
                 }
             });
         }
     </script>
 </head>
 <body>
-
+<h1>Z-chat || LOGIN</h1>
 <form id="ajax_form" action="" method="post">
     Login:<br>
     <label>
@@ -51,6 +53,5 @@
     <br><br>
     <input id="btn" type="submit" value="Submit">
 </form>
-
 </body>
 </html>
