@@ -10,5 +10,12 @@
 <body>
 
 <p> This is news page, that page are secure (private)</p>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    var socket = io('/5be9bf4fa708640e9066f820');
+    socket.on('sendMessage', (msg)=>{
+        console.log(msg)
+    })
+</script>
 </body>
 </html>

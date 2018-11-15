@@ -15,6 +15,23 @@ mongoose.connect(keys.modgoURI, {useNewUrlParser: true})
 app.use(passport.initialize());
 require('./middleware/passport')(passport);
 
+// SOCKETIO
+//
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
+
+// io.on('connection', function(socket){
+//     console.log('connect');
+//     socket.on('chat message', function(msg){
+//         io.emit('chat message', msg);
+//     });
+// });
+
+app.set('socketio', io);
+
+//
+// SOCKETIO
+
 app.use(require('morgan')('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -23,4 +40,4 @@ app.use('/auth', routerAuth);
 app.use('/chat', routerChat);
 app.use('/', defaultRoutes);
 
-module.exports = app;
+module.exports = http;

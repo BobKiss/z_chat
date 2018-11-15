@@ -89,7 +89,9 @@
         });
     }
     ( () => {
-        var user = JSON.parse(localStorage.getItem('user'));
+        if (JSON.parse(localStorage.getItem('user'))) {
+            var user = JSON.parse(localStorage.getItem('user') ? localStorage.getItem('user') : {});
+        }
         createRequest('/chat/getUserDialogs', user, (data)=> {
             reqAnsw = JSON.parse(JSON.stringify(data));
             for (var key in data) {
@@ -104,7 +106,6 @@
             content : form[0].value,
             chatId : form[1].value
         };
-        console.log(reqData);
         createRequest('/chat/sendMessage', reqData, (data)=> {
             console.log(data);
         });
@@ -123,6 +124,7 @@
 
         $('#info').empty();
         $('#messages').empty();
+        localStorage.setItem('curentChat', chatId);
         createRequest('/chat/getDialog', {chatId: chatId}, (data) => {
             console.log(data);
             $('#info').append(`<span>Собеседник: ${data.companion.login}. </span>`);
@@ -130,9 +132,16 @@
             for (var i = data.messages.length - 1; i >= 0; i--) {
                 $('#messages').append(`<span> Отправитель: ${data.companion.login} <br> Сообщение: ${data.messages[i].content}</span> <br> <br>`)
             }
-        })
+        });
     }
 
+</script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    var socket = io('/5be9bf4fa708640e9066f820');
+    socket.on('sendMessage', (msg)=>{
+        console.log(msg)
+    })
 </script>
 </body>
 </html>

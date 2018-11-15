@@ -1,9 +1,14 @@
 const User      = require('../models/Users');
-const Dialog      = require('../models/Dialogs');
-const Message      = require('../models/Messages');
+const Dialog    = require('../models/Dialogs');
+const Message   = require('../models/Messages');
 const path      = require('path');
 
 module.exports.renderMain = (req, res) => {
+    // const io = req.app.get('socketio');
+    //
+    // var nsp = io.of('/my-namespace');
+    // nsp.emit('send', 'everyone!');
+
     res.sendFile(path.join(__dirname, '../public', 'chat.html'));
 };
 module.exports.createDialog = async (req, res) => {
@@ -71,6 +76,8 @@ module.exports.createChat = async (req, res) => {
 };
 module.exports.sendMessage = async (req, res) => {
     const chat =  await Dialog.findOne({ _id : req.body.chatId });
+    const io = req.app.get('socketio');
+    var nsp = io.of(`/${chat._id}`);
     if (chat) {
         const message = new Message({
             chatId: chat._id,
@@ -80,6 +87,7 @@ module.exports.sendMessage = async (req, res) => {
         });
         try {
             await message.save();
+            nsp.emit('sendMessage', JSON.stringify(message));
             res.json(message);
         } catch (e) {
             console.log(`controllers/chat error: ${e}`);
@@ -102,6 +110,9 @@ module.exports.getDialog = async (req, res) => {
         companion: user1._id === req.user._id ? user2 : user1,
         messages: messages
     };
-    console.log();
+
+    const io = req.app.get('socketio');
+    var nsp = io.of(`/${dialog._id}`);
+    nsp.emit('sendMessage', 'Получили диалог');
     res.json(response);
 };
