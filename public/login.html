@@ -6,9 +6,89 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Z-chat || LOGIN</title>
+    <link href="https://fonts.googleapis.com/css?family=Maven+Pro" rel="stylesheet">
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #2f3136;
+            color: #f6f7fd;
+            height: 100%;
+            font-family: 'Maven Pro', sans-serif;
+        }
+        .header img {
+            margin: 30px 0px 0px 0px;
+            height: 120pt;
+        }
+
+        .main-form {
+            margin: 0 auto;
+            padding: 40px;
+            max-width: 600px;
+            background-color: #36393f;
+            border-radius: 10px;
+        }
+        .main-form h3 {
+            font-size: 36px;
+            text-align: center;
+            font-weight: lighter;
+            margin-bottom: 40px;
+        }
+        .main-form input {
+            width: 100%;
+            margin-bottom: 20px;
+            height: 35px;
+            background-color: #313339;
+            border: 1px #222428 solid;
+            color: #f6f7fd;
+            text-indent: 15px;
+            border-radius: 10px;
+            outline: 0;
+        }
+        .main-form span {
+            display: inline-block;
+            margin-bottom: 5px;
+            font-size: 18px;
+        }
+        .main-form input:focus {
+            border-color: #7289da;
+            border-width: 2px;
+            margin-bottom: 18px;
+        }
+        .main-form input:last-child {
+            font-size: 18px;
+            background-color: #7289da;
+            width: 100.5%;
+            height: 45px;
+        }
+        .main-form input:last-child:hover {
+            background-color: #7289B3;
+        }
+        .main-form a {
+            color: #7289da;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+    </style>
     <script>
         $( document ).ready(function() {
+            $.ajax({type: "POST",
+                url: '/',
+                headers: {
+                    'Authorization': localStorage.token,
+                    'Content-Type':'application/json'
+                },
+                dataType: "json",
+                success: (res) => {
+                    if(res.message === 'OK') {
+                        window.location.href = `${window.location.origin}/chat/`;
+                    }
+                }
+            });
             $("#btn").click(
                 function(){
                     sendAjaxForm('ajax_form', '/auth/login');
@@ -39,19 +119,32 @@
     </script>
 </head>
 <body>
-<h1>Z-chat || LOGIN</h1>
-<form id="ajax_form" action="" method="post">
-    Login:<br>
-    <label>
-        <input type="text" name="login" value="admin">
-    </label>
-    <br>
-    Password:<br>
-    <label>
-        <input type="text" name="password" value="123qwe">
-    </label>
-    <br><br>
-    <input id="btn" type="submit" value="Submit">
+
+<div class="header">
+    <!--<img src="http://localhost:3000/public/img/logo.png" alt="">-->
+</div>
+
+<div class="main">
+    <div class="main-form">
+        <form id="ajax_form" action="">
+            <h3>Привет!</h3>
+            <span>Логин</span>
+            <br>
+            <input type="text" name="login">
+            <br>
+            <span>Пароль</span>
+            <br>
+            <input type="text" name="password">
+            <br>
+            <a href="#">Забыли пароль?</a>
+            <br>
+            <input id="btn" type="submit" value="Войти">
+        </form>
+    </div>
+</div>
+
+
+
 </form>
 </body>
 </html>

@@ -5,5 +5,5 @@ const path      = require('path');
 //     res.sendFile(path.join(__dirname, '../public', 'news.html'));
 // };
 module.exports.main = (req, res) => {
-    res.sendFile(path.join(__dirname, '../public', 'news.html'));
+    res.sendFile(path.join(__dirname, '../public', 'main.html'));
 };

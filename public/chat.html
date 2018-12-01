@@ -9,67 +9,366 @@
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
     <style>
-        #curent_window {
-            width: 500px;
-            height: 500px;
-            border: 1px solid black;
+        * {
+            margin: 0;
+            padding: 0;
         }
-        #curent_window #info {
-            width: 100%;
-            height: 20px;
+        body, html {
+            height: 100%;
         }
-        #curent_window #messages {
-            width: 100%;
-            height: 400px;
+        body {
+            display: flex;
+            font-family: 'Maven Pro', sans-serif;
+            overflow: hidden;
         }
-        #curent_window form input:first-child {
+        .main-menu {
+            flex-grow: 0.01;
+            display: flex;
+            flex-direction: column;
+            background-color: #202225;
+            align-items: center;
+        }
+        .logo_main .logo {
+            color: #e3e4e6;
+            font-size: 72px;
+            text-align: center;
+            position: relative;
+        }
+        .logo_main .logo::before {
+            content: '';
+            display: block;
+            position: absolute;
+            left: -35px;
+            top: 26%;
+            background-color: #ffffff;
+            width: 3px;
+            height: 44px;
+            border-bottom-right-radius: 5px;
+            border-top-right-radius: 5px;
+        }
+        .main-menu > p {
+            color: #555659;
+            font-size: 14px;
+            text-align: center;
+            position: relative;
+            font-weight: bold;
+        }
+        .main-menu > p::after {
+            content: '';
+            display: block;
+            position: absolute;
+            bottom: -10px;
+            left: 13%;
+            width: 70%;
+            height: 3px;
+            background-color: #555659;
+        }
+        .pinned .circle__friend {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            background-color: #555659;
+            margin: 24px 0;
+        }
+        .add_pinned {
+            width: 75px;
+            height: 75px;
+            border: 2px dashed #555659;
+            border-radius: 50%;
+            position: relative;
+        }
+        .add_pinned p {
+            font-size: 80px;
+            color: #555659;
+            position: relative;
+            top: -15px;
+            left: 15px;
+        }
+        .second-menu {
+            flex-grow: 2;
+            display: flex;
+            flex-direction: column;
+            background-color: #2f3137;
+            color: #838486;
+            padding-left: 20px;
+            flex: 1 0 auto;
+            position: relative;
+        }
+        .second-menu > .search_friend_list {
+            position: absolute;
+            top: 60px;
+            background-color: #fff;
+            z-index: 99;
             width: 80%;
+            border-radius: 10px;
         }
-        #curent_window form input:last-child {
-            width: 20%;
+        .second-menu > .search-friend > li {
+            margin: 10px;
         }
-        #dialogs li:hover {
-            background-color: gray;
-            color: azure;
+        .second-menu > input {
+            outline: none;
+            background-color: #25272b;
+            border: none;
+            border-radius: 15px;
+            width: 85%;
+            font-size: 18px;
+            line-height: 35px;
+            text-indent: 15px;
+            color: #f6f7fd;
+            font-weight: bold;
+            margin: 15px 0 0 0;
+        }
+        .second-menu > input:focus {
+            border: 2px #4d4f52 solid;
+            line-height: 31px;
+            margin-left: -2px;
+            margin-right: -2px;
+        }
+        .second-menu > span {
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .second-menu > ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+        }
+        .second-menu > ul > li {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        .second-menu > ul .avatar {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #838486;
+            margin: 10px;
+        }
+        .second-menu > ul .new_message {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #f04747;
+            border-radius: 50%;
+            color: #646569;
+            font-weight: bold;
+            bottom: 0;
+            right: 0;
+        }
+        .second-menu > ul .new_message > span {
+            position: absolute;
+            left: 28%;
+        }
+        .second-menu .user-status {
+            position: absolute;
+            bottom: 20px;
+        }
+        .content {
+            flex-grow: 15;
+            background-color: #36393f;
+        }
+        .chat {
+            position: relative;
+            height: 95%;
+        }
+        .messages {
+            overflow-y: scroll;
+            height: 95%;
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column-reverse;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+            align-content: stretch;
+            align-items: stretch;
+        }
+        .message {
+            list-style-type: none;
+            flex-shrink: 0;
+            margin: 20px;
+            position: relative;
+        }
+        .message::before {
+            content: '';
+            display: block;
+            position: absolute;
+            top: -20px;
+            width: 100%;
+            height: 1px;
+            background-color: #555659;
+        }
+        .message .message_content {
+            color: #838486;
+            display: flex;
+            flex-direction: column;
+        }
+        .message .message_content .nick_name {
+            margin: 0 0 10px 0;
+        }
+        .message .profile_logo {
+            margin: 0 10px 0 0;
+            float: left;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #838486;
+        }
+        .send_message {
+            position: absolute;
+            bottom: 0;
+            height: 5%;
+            width: 100%;
+        }
+        .send_message input {
+            width: 95%;
+            line-height: 40px;
+            text-indent: 20px;
+            margin: 0px 20px;
+            outline: none;
+            border: none;
+            border-radius: 10px;
+        }
+        .send_message input:focus {
+            margin: -2px 18px;
+            border: 2px #838486 solid;
+        }
+        .message .message_content .nick_name {
+            font-weight: bold;
         }
 
+        ::-webkit-scrollbar {
+            width: 1em;
+        }
+
+        ::-webkit-scrollbar-track {
+            -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: darkgrey;
+            outline: 1px solid slategrey;
+        }
     </style>
 </head>
 <body>
-
-<span>Dialogs:</span>
-<ul id="dialogs">
-
-</ul>
-<br>
-<span>Send message:</span>
-<form action="" id="sendMessage_form">
-    <input name="content" type="text">
-    <br>
-    <span>To:</span> <br>
-    <input name="chatId" type="text" value="5be9bf4fa708640e9066f820"> <br>
-    <input type="button" value="Send" onclick="sendMessage()">
-</form>
-<br>
-<br>
-<span>Create dialog: </span>
-<form id="createDialog_form" action="">
-    <span>With (id):</span>
-    <input type="text" name="secondId">
-    <input type="button" value="Create dialog" onclick="createDialog()">
-</form>
-<br>
-<br>
-<div id="curent_window">
-    <div id="info"></div>
-    <ul id="messages"></ul>
-    <form action="" class="input">
-        <input type="text">
-        <input type="button" value="Отправить сообщение">
-    </form>
+<div class="main-menu">
+    <div class="logo_main">
+        <p class="logo">Z</p>
+    </div>
+    <p>закреплённые</p>
+    <div class="pinned">
+        <div class="circle__friend"></div>
+        <div class="circle__friend"></div>
+    </div>
+    <div class="add_pinned">
+        <p>+</p>
+    </div>
+</div>
+<div class="second-menu">
+    <input id="search_friend_input" type="text" placeholder="Найти или начать беседу...">
+    <ul class="search_friend_list">
+        <li>123</li>
+        <li>123</li>
+        <li>123</li>
+    </ul>
+    <span>Личные сообщения</span>
+    <ul class="dialogs" id="dialogs">
+        <!--<li>-->
+            <!--<div class="avatar"><img src="" alt=""><span class="new_message"><span>3</span></span></div>-->
+            <!--<span class="nick-name">NickName</span>-->
+        <!--</li>-->
+        <!--<li>-->
+            <!--<div class="avatar"><img src="" alt=""><span class="new_message"><span>3</span></span></div>-->
+            <!--<span class="nick-name">NickName</span>-->
+        <!--</li>-->
+    </ul>
+    <span>Групповые чаты</span>
+    <ul class="polilogs">
+        <li>
+            <div class="avatar">
+                <img src="" alt="">
+                <span class="new_message">
+						<span>3</span>
+					</span>
+            </div>
+            <span class="nick-name">NickName</span>
+        </li>
+        <li>
+            <div class="avatar">
+                <img src="" alt="">
+                <span class="new_message">
+						<span>3</span>
+					</span>
+            </div>
+            <span class="nick-name">NickName</span>
+        </li>
+    </ul>
+    <div class="user-status">
+        <div class="avatar">
+            <img src="" alt="">
+            <div class="status"></div>
+        </div>
+        <span class="nick-name">NickName</span> <a href="#" onclick="localStorage.clear(); window.location.href = `${window.location.origin}/auth/login/`;">Выйти</a>
+    </div>
+    <div class="setting"></div>
+</div>
+<div class="content">
+    <h2 id="info_nick">some nick</h2>
+    <div class="chat">
+        <ul class="messages" id="messages">
+            <li class="message">
+                <div class="profile_logo"><img src="" alt=""></div>
+                <div class="message_content">
+                    <span class="nick_name">NickName</span>
+                    <span class="message_text">Some text</span>
+                </div>
+            </li>
+            <li class="message">
+                <div class="profile_logo"><img src="" alt=""></div>
+                <div class="message_content">
+                    <span class="nick_name">NickName</span>
+                    <span class="message_text">Some text</span>
+                </div>
+            </li>
+        </ul>
+        <div class="send_message">
+            <form id="send_message_form" onsubmit="sendMessage()">
+                <input name="content" type="text" placeholder="Написать сообщение..." id="content">
+            </form>
+        </div>
+    </div>
 </div>
 
 <script>
+    ( () => {
+        var user = JSON.parse(localStorage.getItem('user'));
+        if (user) {
+            user = JSON.parse(localStorage.getItem('user') ? localStorage.getItem('user') : {});
+        }
+        createRequest('/chat/getUserDialogs', user, (data)=> {
+            reqAnsw = JSON.parse(JSON.stringify(data));
+            for (var key in data) {
+                // $('#dialogs').append(`<li onclick="getDialog('${data[key].lastMessage.chatId}')">From: ${data[key].userName}. Last Message: ${ data[key].lastMessage.content != undefined ? data[key].lastMessage.content : '(не найдено)' }</li>`);
+                $('#dialogs').append(`
+                <li onclick="getDialog('${data[key].lastMessage.chatId}')">
+                    <div class="avatar"><img src="" alt=""><span class="new_message"><span>3</span></span></div>
+                    <span class="nick-name">${data[key].userName}</span>
+                </li>`);
+            }
+        });
+        $('#send_message_form').submit( function (event) {
+            event.preventDefault();
+        });
+        $('#search_friend_input').submit( function (event) {
+            event.preventDefault();
+
+        })
+    })();
+
+
     function createRequest(url, reqData, successed){
         $.ajax({
             type: "POST",
@@ -88,28 +387,27 @@
             }
         });
     }
-    ( () => {
-        if (JSON.parse(localStorage.getItem('user'))) {
-            var user = JSON.parse(localStorage.getItem('user') ? localStorage.getItem('user') : {});
-        }
-        createRequest('/chat/getUserDialogs', user, (data)=> {
-            reqAnsw = JSON.parse(JSON.stringify(data));
-            for (var key in data) {
-                $('#dialogs').append(`<li onclick="getDialog('${data[key].lastMessage.chatId}')">From: ${data[key].userName}. Last Message: ${ data[key].lastMessage.content != undefined ? data[key].lastMessage.content : '(не найдено)' }</li>`);
-            }
-        });
-    })();
 
     function sendMessage(){
-        var form = $('#sendMessage_form').serializeArray();
+        var form = $('#send_message_form').serializeArray();
         var reqData = {
             content : form[0].value,
             chatId : form[1].value
         };
         createRequest('/chat/sendMessage', reqData, (data)=> {
-            console.log(data);
+            $('#send_message_form #content').val('');
+            // $('#messages').append(`<span> Отправитель: ${'Вы:'} <br> Сообщение: ${data.content}</span> <br> <br>`)
+            $('#messages').prepend(
+                `<li class="message">
+                <div class="profile_logo"><img src="" alt=""></div>
+                <div class="message_content">
+                    <span class="nick_name">Вы</span>
+                    <span class="message_text">${data.content}</span>
+                </div>
+                </li>`);
         });
     }
+
     function createDialog() {
         var form = $('#createDialog_form').serializeArray();
         var reqData = {
@@ -121,16 +419,26 @@
     }
 
     function getDialog(chatId) {
-
         $('#info').empty();
         $('#messages').empty();
+        $('#send_message_form input[name="chatId"]').remove();
+        $('#send_message_form').append(`<input name="chatId" type="hidden" value="${chatId}">`);
         localStorage.setItem('curentChat', chatId);
         createRequest('/chat/getDialog', {chatId: chatId}, (data) => {
-            console.log(data);
-            $('#info').append(`<span>Собеседник: ${data.companion.login}. </span>`);
-            console.log(data.messages.length);
-            for (var i = data.messages.length - 1; i >= 0; i--) {
-                $('#messages').append(`<span> Отправитель: ${data.companion.login} <br> Сообщение: ${data.messages[i].content}</span> <br> <br>`)
+            // console.log(data);
+            $('#info_nick').text(data.companion.login);
+            // console.log(data.messages.length);
+            for (var i = 0; i < data.messages.length; i++) {
+                // $('#messages').append(`<span> Отправитель: ${data.companion.login} <br> Сообщение: ${data.messages[i].content}</span> <br> <br>`);
+                $('#messages').append(
+                `<li class="message">
+                <div class="profile_logo"><img src="" alt=""></div>
+                <div class="message_content">
+                    <span class="nick_name">${data.companion.login}</span>
+                    <span class="message_text">${data.messages[i].content}</span>
+                </div>
+                </li>`);
+
             }
         });
     }

@@ -17,19 +17,9 @@ require('./middleware/passport')(passport);
 
 // SOCKETIO
 //
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-
-// io.on('connection', function(socket){
-//     console.log('connect');
-//     socket.on('chat message', function(msg){
-//         io.emit('chat message', msg);
-//     });
-// });
-// git test
-
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
 app.set('socketio', io);
-
 //
 // SOCKETIO
 
