@@ -9,5 +9,6 @@ router.post('/createChat', passport.authenticate('jwt', {session: false}), contr
 router.post('/getUserDialogs', passport.authenticate('jwt', {session: false}), controller.getUserDialogs);
 router.post('/sendMessage', passport.authenticate('jwt', {session: false}), controller.sendMessage);
 router.post('/getDialog', passport.authenticate('jwt', {session: false}), controller.getDialog);
+router.post('/getUsers', passport.authenticate('jwt', {session: false}), controller.getUsers);
 
 module.exports = router;

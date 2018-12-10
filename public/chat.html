@@ -94,7 +94,7 @@
             flex: 1 0 auto;
             position: relative;
         }
-        .second-menu > .search_friend_list {
+        .second-menu > #search_friend_list {
             position: absolute;
             top: 60px;
             background-color: #fff;
@@ -268,11 +268,8 @@
     </div>
 </div>
 <div class="second-menu">
-    <input id="search_friend_input" type="text" placeholder="Найти или начать беседу...">
-    <ul class="search_friend_list">
-        <li>123</li>
-        <li>123</li>
-        <li>123</li>
+    <input id="search_friend_input" type="text" placeholder="Найти или начать беседу..." onchange="searchFriend()">
+    <ul id="search_friend_list">
     </ul>
     <span>Личные сообщения</span>
     <ul class="dialogs" id="dialogs">
@@ -311,7 +308,7 @@
             <img src="" alt="">
             <div class="status"></div>
         </div>
-        <span class="nick-name">NickName</span> <a href="#" onclick="localStorage.clear(); window.location.href = `${window.location.origin}/auth/login/`;">Выйти</a>
+        <span id="user-nick-name" class="nick-name">NickName</span> <a href="#" onclick="localStorage.clear(); window.location.href = `${window.location.origin}/auth/login/`;">Выйти</a>
     </div>
     <div class="setting"></div>
 </div>
@@ -345,11 +342,12 @@
 <script>
     ( () => {
         var user = JSON.parse(localStorage.getItem('user'));
-        if (user) {
-            user = JSON.parse(localStorage.getItem('user') ? localStorage.getItem('user') : {});
+        if (!user) {
+            window.location.href = `${window.location.origin}/auth/login`;
         }
         createRequest('/chat/getUserDialogs', user, (data)=> {
             reqAnsw = JSON.parse(JSON.stringify(data));
+            // console.log(data);
             for (var key in data) {
                 // $('#dialogs').append(`<li onclick="getDialog('${data[key].lastMessage.chatId}')">From: ${data[key].userName}. Last Message: ${ data[key].lastMessage.content != undefined ? data[key].lastMessage.content : '(не найдено)' }</li>`);
                 $('#dialogs').append(`
@@ -362,10 +360,9 @@
         $('#send_message_form').submit( function (event) {
             event.preventDefault();
         });
-        $('#search_friend_input').submit( function (event) {
-            event.preventDefault();
+        $('#user-nick-name').text(user.login);
 
-        })
+
     })();
 
 
@@ -397,24 +394,23 @@
         createRequest('/chat/sendMessage', reqData, (data)=> {
             $('#send_message_form #content').val('');
             // $('#messages').append(`<span> Отправитель: ${'Вы:'} <br> Сообщение: ${data.content}</span> <br> <br>`)
-            $('#messages').prepend(
-                `<li class="message">
-                <div class="profile_logo"><img src="" alt=""></div>
-                <div class="message_content">
-                    <span class="nick_name">Вы</span>
-                    <span class="message_text">${data.content}</span>
-                </div>
-                </li>`);
+            // $('#messages').prepend(
+            //     `<li class="message">
+            //     <div class="profile_logo"><img src="" alt=""></div>
+            //     <div class="message_content">
+            //         <span class="nick_name">Вы</span>
+            //         <span class="message_text">${data.content}</span>
+            //     </div>
+            //     </li>`);
         });
     }
 
-    function createDialog() {
-        var form = $('#createDialog_form').serializeArray();
+    function createDialog(id) {
         var reqData = {
-            secondId: form[0].value
+            secondId: id
         };
         createRequest('/chat/createDialog', reqData, (data) => {
-            console.log(data);
+            // console.log(data);
         });
     }
 
@@ -430,11 +426,13 @@
             // console.log(data.messages.length);
             for (var i = 0; i < data.messages.length; i++) {
                 // $('#messages').append(`<span> Отправитель: ${data.companion.login} <br> Сообщение: ${data.messages[i].content}</span> <br> <br>`);
+                var user = JSON.parse(localStorage.getItem('user'));
+
                 $('#messages').append(
                 `<li class="message">
                 <div class="profile_logo"><img src="" alt=""></div>
                 <div class="message_content">
-                    <span class="nick_name">${data.companion.login}</span>
+                    <span class="nick_name">${ user.userId === data.messages[i].fromId ? 'Вы:' : data.companion.login}</span>
                     <span class="message_text">${data.messages[i].content}</span>
                 </div>
                 </li>`);
@@ -442,13 +440,35 @@
             }
         });
     }
+    
+    function searchFriend() {
+        createRequest('/chat/getUsers', {login: $('#search_friend_input').val()}, (data) => {
+            for (var i = 0; i < data.length; i++) {
+                $('#search_friend_list').append( `<li onclick="createDialog('${data[i]._id}')">${data[i].login}</li>` );
+            }
+        });
+    }
 
 </script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-    var socket = io('/5be9bf4fa708640e9066f820');
+    var socket = io('/');
     socket.on('sendMessage', (msg)=>{
-        console.log(msg)
+        var message = JSON.parse(msg);
+        var currentChat = localStorage.getItem('curentChat');
+        var user = JSON.parse(localStorage.getItem('user'));
+        var companionLogin = $('#info_nick').text();
+        // console.log(`user.userId: ${user.userId},  message.fromId: ${message.fromId}, companionLogin: ${companionLogin}`)
+        if (message.chatId === currentChat) {
+            $('#messages').prepend(
+                `<li class="message">
+                <div class="profile_logo"><img src="" alt=""></div>
+                <div class="message_content">
+                    <span class="nick_name">${ user.userId === message.fromId ? 'Вы:' : companionLogin}</span>
+                    <span class="message_text">${message.content}</span>
+                </div>
+                </li>`);
+        }
     })
 </script>
 </body>

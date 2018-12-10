@@ -20,6 +20,9 @@ require('./middleware/passport')(passport);
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 app.set('socketio', io);
+io.on('connection', function(socket){
+    console.log('q');
+});
 //
 // SOCKETIO
 

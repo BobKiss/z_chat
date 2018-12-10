@@ -55,8 +55,10 @@ module.exports.getUserDialogs = async (req, res) => {
     let dialogsInfo = [];
     const response = await Promise.all(dialogsId.map( async function(dialog, i, arr) {
         // console.log(dialog)
-        const userId = (dialog.firstId === req.user._id ? dialog.secondId : dialog.firstId);
+        //console.log(`${dialog.firstId} == ${req.user._id} ? ${dialog.secondId} : ${dialog.firstId}`);
+        const userId = (dialog.firstId == req.user._id ? dialog.secondId : dialog.firstId);
         const userName = await User.findOne({_id: userId}, {login: 1, _id: 0});
+        // console.log(userId);
         let lastMessage =  await Message.findOne({chatId: dialog._id}, {_id: false }).sort({_id:-1});
         if (lastMessage === null) {
             lastMessage = {
@@ -69,15 +71,16 @@ module.exports.getUserDialogs = async (req, res) => {
             lastMessage: lastMessage
         };
     }));
+    // console.log(response);
     res.json(response);
 };
 module.exports.createChat = async (req, res) => {
-    console.log(req.user)
+    // console.log(req.user)
 };
 module.exports.sendMessage = async (req, res) => {
     const chat =  await Dialog.findOne({ _id : req.body.chatId });
     const io = req.app.get('socketio');
-    var nsp = io.of(`/${chat._id}`);
+    var nsp = io.of(`/`);
     if (chat) {
         const message = new Message({
             chatId: chat._id,
@@ -103,16 +106,28 @@ module.exports.getDialog = async (req, res) => {
     const dialog =  await Dialog.findOne({ _id : req.body.chatId });
     const user1 = await User.findOne({_id: dialog.firstId}, {login: 1, _id: 1});
     const user2 = await User.findOne({_id: dialog.secondId}, {login: 1, _id: 1});
-    const messages = await Message.find({ chatId: req.body.chatId }).find().sort({'createdAt': -1}).limit(5);
+    const messages = await Message.find({ chatId: req.body.chatId }).sort({'createdAt': -1}).limit(5);
     let response = {
         dialogInfo: dialog,
         user: user1._id === req.user._id ? user1 : user2,
         companion: user1._id === req.user._id ? user2 : user1,
         messages: messages
     };
-
-    const io = req.app.get('socketio');
-    var nsp = io.of(`/${dialog._id}`);
-    nsp.emit('sendMessage', 'Получили диалог');
+    // console.log(response);
+    // const io = req.app.get('socketio');
+    // var nsp = io.of(`/${dialog._id}`);
+    // nsp.emit('sendMessage', 'Получили диалог');
     res.json(response);
+};
+
+module.exports.getUsers = async (req,res) => {
+    if (req.body.login.length > 3 ) {
+        const candidates = await User.find({ "login": { "$regex": `${req.body.login}`, "$options": "i" } }, {login: 1, _id: 1}).limit(5);
+        res.json(candidates);
+    } else {
+        res.json({
+            error: true,
+            message:"I want more symbols, bro."
+        });
+    }
 };
