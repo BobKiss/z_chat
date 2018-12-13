@@ -14,6 +14,8 @@ module.exports.renderMain = (req, res) => {
 module.exports.createDialog = async (req, res) => {
     const firstMember = await User.findOne({_id: req.user._id});
     const secondMember = await User.findOne({_id: req.body.secondId});
+    const io = req.app.get('socketio');
+    var nsp = io.of(`/`);
     if (firstMember && secondMember) {
         const unicCheck = await Dialog.findOne({
             $or: [
@@ -33,6 +35,7 @@ module.exports.createDialog = async (req, res) => {
             });
             try {
                 await dialog.save();
+                nsp.emit('newDialog', JSON.stringify(dialog));
                 res.json(dialog);
 
             } catch (e) {

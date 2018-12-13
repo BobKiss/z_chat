@@ -87,6 +87,9 @@
                     if(res.message === 'OK') {
                         window.location.href = `${window.location.origin}/chat/`;
                     }
+                },
+                error: (res) => {
+                    localStorage.clear();
                 }
             });
             $("#btn").click(
@@ -136,7 +139,7 @@
             <br>
             <input type="text" name="password">
             <br>
-            <a href="#">Забыли пароль?</a>
+            <a href="/auth/register/">Регистрация</a>
             <br>
             <input id="btn" type="submit" value="Войти">
         </form>

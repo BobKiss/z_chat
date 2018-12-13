@@ -268,11 +268,12 @@
     </div>
 </div>
 <div class="second-menu">
-    <input id="search_friend_input" type="text" placeholder="Найти или начать беседу..." onchange="searchFriend()">
+    <input id="search_friend_input" autocomplete="off" type="text" placeholder="Найти или начать беседу..." onchange="searchFriend()">
     <ul id="search_friend_list">
     </ul>
     <span>Личные сообщения</span>
     <ul class="dialogs" id="dialogs">
+        <span>Не найдены, восползуйтесь поиском</span>
         <!--<li>-->
             <!--<div class="avatar"><img src="" alt=""><span class="new_message"><span>3</span></span></div>-->
             <!--<span class="nick-name">NickName</span>-->
@@ -283,26 +284,26 @@
         <!--</li>-->
     </ul>
     <span>Групповые чаты</span>
-    <ul class="polilogs">
-        <li>
-            <div class="avatar">
-                <img src="" alt="">
-                <span class="new_message">
-						<span>3</span>
-					</span>
-            </div>
-            <span class="nick-name">NickName</span>
-        </li>
-        <li>
-            <div class="avatar">
-                <img src="" alt="">
-                <span class="new_message">
-						<span>3</span>
-					</span>
-            </div>
-            <span class="nick-name">NickName</span>
-        </li>
-    </ul>
+    <!--<ul class="polilogs">-->
+        <!--<li>-->
+            <!--<div class="avatar">-->
+                <!--<img src="" alt="">-->
+                <!--<span class="new_message">-->
+						<!--<span>3</span>-->
+					<!--</span>-->
+            <!--</div>-->
+            <!--<span class="nick-name">NickName</span>-->
+        <!--</li>-->
+        <!--<li>-->
+            <!--<div class="avatar">-->
+                <!--<img src="" alt="">-->
+                <!--<span class="new_message">-->
+						<!--<span>3</span>-->
+					<!--</span>-->
+            <!--</div>-->
+            <!--<span class="nick-name">NickName</span>-->
+        <!--</li>-->
+    <!--</ul>-->
     <div class="user-status">
         <div class="avatar">
             <img src="" alt="">
@@ -316,24 +317,25 @@
     <h2 id="info_nick">some nick</h2>
     <div class="chat">
         <ul class="messages" id="messages">
-            <li class="message">
-                <div class="profile_logo"><img src="" alt=""></div>
-                <div class="message_content">
-                    <span class="nick_name">NickName</span>
-                    <span class="message_text">Some text</span>
-                </div>
-            </li>
-            <li class="message">
-                <div class="profile_logo"><img src="" alt=""></div>
-                <div class="message_content">
-                    <span class="nick_name">NickName</span>
-                    <span class="message_text">Some text</span>
-                </div>
-            </li>
+            <!--<li class="message">-->
+                <!--<div class="profile_logo"><img src="" alt=""></div>-->
+                <!--<div class="message_content">-->
+                    <!--<span class="nick_name">NickName</span>-->
+                    <!--<span class="message_text">Some text</span>-->
+                <!--</div>-->
+            <!--</li>-->
+            <!--<li class="message">-->
+                <!--<div class="profile_logo"><img src="" alt=""></div>-->
+                <!--<div class="message_content">-->
+                    <!--<span class="nick_name">NickName</span>-->
+                    <!--<span class="message_text">Some text</span>-->
+                <!--</div>-->
+            <!--</li>-->
+            <li class="message">Выберите собеседника в меню слева.</li>
         </ul>
         <div class="send_message">
             <form id="send_message_form" onsubmit="sendMessage()">
-                <input name="content" type="text" placeholder="Написать сообщение..." id="content">
+                <input autocomplete="off" name="content" type="text" placeholder="Написать сообщение..." id="content">
             </form>
         </div>
     </div>
@@ -410,7 +412,7 @@
             secondId: id
         };
         createRequest('/chat/createDialog', reqData, (data) => {
-            // console.log(data);
+            location.reload();
         });
     }
 
@@ -420,13 +422,19 @@
         $('#send_message_form input[name="chatId"]').remove();
         $('#send_message_form').append(`<input name="chatId" type="hidden" value="${chatId}">`);
         localStorage.setItem('curentChat', chatId);
+        var user = JSON.parse(localStorage.getItem('user'));
         createRequest('/chat/getDialog', {chatId: chatId}, (data) => {
-            // console.log(data);
-            $('#info_nick').text(data.companion.login);
+            console.log(data);
+            var myCompanion;
+            if (user.userId === data.companion._id)
+                myCompanion = data.user.login;
+            else if (user.userId === data.user._id)
+                myCompanion = data.companion.login;
+
+            $('#info_nick').text(myCompanion);
             // console.log(data.messages.length);
             for (var i = 0; i < data.messages.length; i++) {
                 // $('#messages').append(`<span> Отправитель: ${data.companion.login} <br> Сообщение: ${data.messages[i].content}</span> <br> <br>`);
-                var user = JSON.parse(localStorage.getItem('user'));
 
                 $('#messages').append(
                 `<li class="message">
@@ -454,9 +462,9 @@
 <script>
     var socket = io('/');
     socket.on('sendMessage', (msg)=>{
+        var user = JSON.parse(localStorage.getItem('user'));
         var message = JSON.parse(msg);
         var currentChat = localStorage.getItem('curentChat');
-        var user = JSON.parse(localStorage.getItem('user'));
         var companionLogin = $('#info_nick').text();
         // console.log(`user.userId: ${user.userId},  message.fromId: ${message.fromId}, companionLogin: ${companionLogin}`)
         if (message.chatId === currentChat) {
@@ -468,8 +476,19 @@
                     <span class="message_text">${message.content}</span>
                 </div>
                 </li>`);
+        } else if (message.chatId === user.userId) {
+            $('body').append(`<div style="position: fixed; bottom: 0px; right: 20px; display: none; height: 50px; width: 300px; background-color: red; color: white" id="alert"><span>У вас новое сообщение от: ${companionLogin}</span></div>`)
+            $('#alert').slideDown('slow');
         }
-    })
+    });
+    socket.on('newDialog', (msg) => {
+        var user = JSON.parse(localStorage.getItem('user'));
+        var message = JSON.parse(msg);
+        console.log('qq');
+        if (message.firstId === user.userId || message.secondId === user.userId) {
+            location.reload();
+        }
+    });
 </script>
 </body>
 </html>
